@@ -154,6 +154,8 @@ def main():
                         help="""Type of upsampling method""")
 
     parser.add_argument('--log_path', type=str, default='./train.log')
+    parser.add_argument('--lr', type=float, default=0.00002)
+    parser.add_argument('--scheduler', type=str, default='ReduceLROnPlateau')
     args = parser.parse_args()
     print('args parsed')
 
@@ -228,8 +230,10 @@ def train(GPU,args):
     
     model.cuda(GPU)
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.init_lr)
-    # scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=args.reduce_factor, patience=args.patience_level, min_lr=args.min_lr)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,0.0002,epochs=args.epochs,steps_per_epoch=1,pct_start=0.5,cycle_momentum=False,anneal_strategy='linear')
+    if args.scheduler == 'ReduceLROnPlateau':
+        scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, 'min', factor=args.reduce_factor, patience=args.patience_level, min_lr=args.min_lr)
+    elif args.scheduler == 'OneCycleLR':
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer,args.lr,epochs=args.epochs,steps_per_epoch=1900,pct_start=0.05,cycle_momentum=False,anneal_strategy='linear')
     scaler = GradScaler()
         
     if args.recover:
@@ -361,10 +365,11 @@ def train(GPU,args):
                 pass
             file = open(args.log_path, 'a')
             file.writelines('Epoch: '+ str(epoch + 1)+ ' ')
-            file.writelines('training loss: '+ str(loss_metric[0].cpu().item())+ ' ')
-            file.writelines('validation loss: '+ str(loss_metric[1].cpu().item())+ ' ')
-            file.writelines('train epe: '+ str(loss_metric[2].cpu().item())+ ' ')
-            file.writelines('val epe: '+ str(loss_metric[3].cpu().item())+ '\n')
+            file.writelines('training loss: '+ str(round(loss_metric[0].cpu().item(),5))+ ' ')
+            file.writelines('validation loss: '+ str(round(loss_metric[1].cpu().item(),5))+ ' ')
+            file.writelines('train epe: '+ str(round(loss_metric[2].cpu().item(),5))+ ' ')
+            file.writelines('val epe: '+ str(round(loss_metric[3].cpu().item(),5))+ ' ')
+            file.writelines('lr: '+ str(optimizer.__getattribute__('param_groups')[0]['lr'])+ '\n')
             file.close()
 
             #save model
