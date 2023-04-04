@@ -269,8 +269,8 @@ def train(GPU,args):
     if args.test_dataset == 'backstep':
         print('backstep dataset loaded', flush=True)
         #backstep test case
-        test_tfrecord = '../data/Test_Dataset_10Imgs_backstep.tfrecord-00000-of-00001'
-        test_tfrecord_idx = "../data/idx_files/Test_Dataset_10Imgs_backstep.idx"
+        test_tfrecord = './data/Test_Dataset_10Imgs_backstep.tfrecord-00000-of-00001'
+        test_tfrecord_idx = "./data/idx_files/Test_Dataset_10Imgs_backstep.idx"
     elif args.test_dataset == 'cylinder':
         print('cylinder dataset loaded', flush=True)
         #cylinder test case
@@ -279,28 +279,28 @@ def train(GPU,args):
     elif args.test_dataset == 'jhtdb':
         print('jhtdb dataset loaded', flush=True)
         #jhtdb test case
-        test_tfrecord = '../data/Test_Dataset_10Imgs_jhtdb.tfrecord-00000-of-00001'
-        test_tfrecord_idx = "../data/idx_files/Test_Dataset_10Imgs_jhtdb.idx"
+        test_tfrecord = './data/Test_Dataset_10Imgs_jhtdb.tfrecord-00000-of-00001'
+        test_tfrecord_idx = "./data/idx_files/Test_Dataset_10Imgs_jhtdb.idx"
     elif args.test_dataset == 'dns_turb':
         print('dns-turbulence dataset loaded', flush=True)
         #dns turbulence test case
-        test_tfrecord = '../data/Test_Dataset_10Imgs_dns_turb.tfrecord-00000-of-00001'
-        test_tfrecord_idx = "../data/idx_files/Test_Dataset_10Imgs_dns_turb.idx"
+        test_tfrecord = './data/Test_Dataset_10Imgs_dns_turb.tfrecord-00000-of-00001'
+        test_tfrecord_idx = "./data/idx_files/Test_Dataset_10Imgs_dns_turb.idx"
     elif args.test_dataset == 'sqg':
         print('sqg dataset loaded', flush=True)
         #sqg test case
-        test_tfrecord = '../data/Test_Dataset_10Imgs_sqg.tfrecord-00000-of-00001'
-        test_tfrecord_idx = "../data/idx_files/Test_Dataset_10Imgs_sqg.idx"
+        test_tfrecord = './data/Test_Dataset_10Imgs_sqg.tfrecord-00000-of-00001'
+        test_tfrecord_idx = "./data/idx_files/Test_Dataset_10Imgs_sqg.idx"
     elif args.test_dataset == 'tbl':
         print('TBL dataset loaded', flush=True)
         # DNS transitional TBL
-        test_tfrecord = '../data/Dataset_TransTBL_Original8px_fullFrame_withGT.tfrecord-00000-of-00001'
-        test_tfrecord_idx = "../data/idx_files/Dataset_TransTBL_Original8px_withGT_fullFrame.idx"
+        test_tfrecord = './data/Dataset_TransTBL_Original8px_fullFrame_withGT.tfrecord-00000-of-00001'
+        test_tfrecord_idx = "./data/idx_files/Dataset_TransTBL_Original8px_withGT_fullFrame.idx"
     elif args.test_dataset == 'twcf':
         print('TWCF dataset loaded', flush=True)
         # experimental data turbulent wavy channel flow
-        test_tfrecord = '../data/Test_Dataset_AR_rawImage.tfrecord-00000-of-00001'
-        test_tfrecord_idx = "../data/idx_files/Test_Dataset_AR_rawImage.idx"
+        test_tfrecord = './data/Test_Dataset_AR_rawImage.tfrecord-00000-of-00001'
+        test_tfrecord_idx = "./data/idx_files/Test_Dataset_AR_rawImage.idx"
     else:
         raise ValueError('Selected test dataset not available: ', args.test_dataset)
 
