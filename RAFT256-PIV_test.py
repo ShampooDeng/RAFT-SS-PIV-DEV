@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import scipy.signal
 import scipy.io
 from numpy import genfromtxt
-from flowNetsRAFT256 import RAFT256
+from RAFT.flowNetsRAFT256 import RAFT256
 # from getIP import resolve_master_node
 import platform
 import socket

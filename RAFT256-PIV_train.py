@@ -17,7 +17,7 @@ from tqdm import tqdm
 
 import math
 import numpy as np
-from flowNetsRAFT256 import RAFT256
+from RAFT.flowNetsRAFT256 import RAFT256
 # from getIP import resolve_master_node
 import socket
 # import ifcfg
@@ -158,6 +158,8 @@ def main():
     parser.add_argument('--scheduler', type=str, default='ReduceLROnPlateau')
     args = parser.parse_args()
     print('args parsed')
+    
+    print(args.init_lr, args.patience_level)
 
     # mp.spawn(train, nprocs=args.gpus, args=(args,))
     train(0,args)
@@ -237,8 +239,8 @@ def train(GPU,args):
     scaler = GradScaler()
         
     if args.recover:
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        # scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
         start_epoch = checkpoint['epoch']+1
         print("recovering at epoch: ", start_epoch)
 

@@ -16,7 +16,7 @@ import time
 from tqdm import tqdm
 
 import math
-from flowNetsRAFT256_SS import RAFT256_SS
+from RAFT.flowNetsRAFT256_SS import RAFT256_SS
 # import socket
 import cv2
 import numpy as np
