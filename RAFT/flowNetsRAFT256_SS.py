@@ -14,8 +14,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import torchvision
 
-from submodules_RAFT_extractor256 import BasicEncoder256
-from submodules_RAFT_GRU256 import BasicUpdateBlock256
+from RAFT.submodules_RAFT_extractor256 import BasicEncoder256
+from RAFT.submodules_RAFT_GRU256 import BasicUpdateBlock256
 
 try:
     autocast = torch.cuda.amp.autocast
