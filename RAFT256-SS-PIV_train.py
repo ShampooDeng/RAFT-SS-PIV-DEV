@@ -23,12 +23,12 @@ import numpy as np
 from torch.utils.data import DataLoader
 from tfrecord.torch.dataset import TFRecordDataset
 
-from nvidia.dali.pipeline import Pipeline
-import nvidia.dali.ops as ops
-import nvidia.dali.types as types
-from nvidia.dali.plugin.pytorch import DALIGenericIterator
-from nvidia.dali.plugin.pytorch import DALIClassificationIterator as PyTorchIterator
-import nvidia.dali.tfrecord as tfrec
+# from nvidia.dali.pipeline import Pipeline
+# import nvidia.dali.ops as ops
+# import nvidia.dali.types as types
+# from nvidia.dali.plugin.pytorch import DALIGenericIterator
+# from nvidia.dali.plugin.pytorch import DALIClassificationIterator as PyTorchIterator
+# import nvidia.dali.tfrecord as tfrec
 
 from subprocess import call
 import os.path
