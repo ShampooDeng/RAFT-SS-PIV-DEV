@@ -12,6 +12,7 @@ import argparse
 from RAFT.flowNetsRAFT256_SS import RAFT256_SS
 from RAFT.flowNetsRAFT256 import RAFT256
 import unliteflownet.model.models as UnLiteFlowNet
+from deformpiv.deformpiv import DeformPIV
 
 assert torch.cuda.is_available(), "cuda not avaiable!"
 assert torch.cuda.device_count() == 1, "multi-gpu is not currently supported!"
@@ -107,7 +108,7 @@ def predictFlowUnLiteFlowNet(_, model, imgs, gt):
     return output[-1], (nan,nan)
 
 
-def evaluateModel(args, modelName:str, path2cases:list, storeDir:str,debug=False):
+def evaluateModel(args, modelName:str, path2Cases:list, storeDir:str,debug=False):
     case = []
     aveEPE = []
     preds = []
@@ -136,7 +137,7 @@ def evaluateModel(args, modelName:str, path2cases:list, storeDir:str,debug=False
     
     with torch.set_grad_enabled(False):
         # evaluate model on test cases
-        evalProcessBar = tqdm(path2cases)
+        evalProcessBar = tqdm(path2Cases)
         for path in evalProcessBar:
             evalProcessBar.set_description('')
             imgs, gt = readCase(path)
@@ -165,10 +166,54 @@ def evaluateModel(args, modelName:str, path2cases:list, storeDir:str,debug=False
         if not os.path.exists(storeDir):
             os.makedirs(storeDir)
         np.savez(storeDir + modelName, data=np.asarray(aveEPE), preds=preds, gts=gts)
+        
+
+def evalWithDeformPIV(config, paht2Cases, storeDir, modelName='DiffeomorphicPIV', debug=False):
+    # initialize DeformPIV
+    dpiv = DeformPIV(config)
+    
+    # compute img pairs
+    epeList = []
+    preds = []
+    gts = []
+    evalProcessBar = tqdm(paht2Cases)
+    for path in evalProcessBar:
+        # data preprocessing
+        data = np.load(path)
+        element = ['img1', 'img2', 'u', 'v']
+        img1, img2, u, v = [data[x] for x in element]
+        gt = np.stack((u,v),axis=1)
+        
+        # compute flow
+        predOfOneSampleSet = []
+        for i in range(img1.shape[0]):
+            _,_,predu,predv = dpiv.compute(img1[i], img2[i], u[i], v[i])
+            pred = np.stack((predu, predv),axis=0)
+            predOfOneSampleSet.append(pred)
+            # # debug
+            # print(pred.shape)
+            # break
+        predOfOneSampleSet = np.stack(predOfOneSampleSet,axis=0)
+        epe = np.sqrt(np.sum(np.square(predOfOneSampleSet - gt), axis=1)).mean()
+
+        epeList.append(epe)
+        preds.append(predOfOneSampleSet.astype(np.float32))
+        gts.append(gt.astype(np.float32))
+
+    # TODO: save epe and predictions
+    # debug
+    if debug:
+        print(epeList.__len__(), preds.__len__(), gts.__len__())
+        print(preds[0].shape, gts[0].shape)
+
+    if not os.path.exists(storeDir):
+        os.makedirs(storeDir)
+    np.savez(storeDir + modelName, data=np.asarray(epeList), preds=preds, gts=gts)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
+    # ------------------------- config for deeppiv methods -------------------------
     parser.add_argument('-n', '--nodes', default=1, type=int,
                         help='number of compute nodes')
     parser.add_argument('-g', '--gpus', default=2, type=int,
@@ -205,11 +250,18 @@ if __name__ == '__main__':
     parser.add_argument('--upsample', type=str, default='convex',
                         choices=['convex', 'bicubic', 'bicubic8', 'lanczos4', 'lanczos4_8'],
                         help="""Type of upsampling method""")
+    # ------------------------- config for deformpiv -------------------------
+    parser.add_argument('--pivmethod', type=str,
+                        default='opticalflow')
+    parser.add_argument('--deform', type=str,
+                        default='FDDI')
+    parser.add_argument('--runs', type=int,
+                        default=15)
     args = parser.parse_args()
     
     # paths = getSamples(PREFIX,caseName='lamb-oseen')
     # paths = getSamples(PREFIX,caseName='sin')
-    # debug
+    ## debug
     # print(paths, sep='\n')
     # imgs,gt = readCase(paths[0])
     # print(imgs.shape, gt.shape, sep='\n')
@@ -218,10 +270,16 @@ if __name__ == '__main__':
     # evaluateModel(args,modelName='RAFT-SS-PIV',path2cases=paths,debug=True)
     # evaluateModel(args,modelName='UnLiteFlowNet-PIV',path2cases=paths,debug=True)
     
+    # paths = getSamples(PREFIX, caseName='lamb-oseen')
+    # evalWithDeformPIV(args, paths, storeDir='./results/lamb-oseen/', debug=True)
+    paths = getSamples(PREFIX, caseName='sin')
+    evalWithDeformPIV(args, paths, storeDir='./results/sin/', debug=True)
+    assert False
+    
     for model in MODEL_NAMES:
         for case in CASE_NAMES:
             paths = getSamples(PREFIX, caseName=case)
-            evaluateModel(args,modelName=model,path2cases=paths,
+            evaluateModel(args,modelName=model,path2Cases=paths,
                           storeDir='./results/'+case+'/',
                           debug=False)
             print(model, case, sep=' ')
