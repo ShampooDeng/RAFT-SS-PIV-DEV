@@ -283,7 +283,10 @@ def cupy_kernel(strFunction, objectVariables):
 # @cupy.util.memoize(for_each_device=True)
 @cupy.memoize(for_each_device=True)
 def cupy_launch(strFunction, strKernel):
-    return cupy.cuda.compile_with_cache(strKernel).get_function(strFunction)
+    # return cupy.cuda.compile_with_cache(strKernel).get_function(strFunction)
+
+    # If you are using cupy v10 or above 
+    return cupy.RawKernel(strKernel, strFunction)
 
 
 # end

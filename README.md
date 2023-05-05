@@ -4,13 +4,19 @@ todo
 
 ## Requirement
 
-'''shell
+All codes are running with python3.9, torch2.0.0
+
+```shell
+# For reading TFRecord
 pip install tfrecord protobuf=3.20.1
 pip install --extra-index-url https://developer.download.nvidia.com/compute/redist --upgrade nvidia-dali-cuda110
+
 conda install numpy matplotlib scipy jupyter
-<!-- conda install -c conda-forge openpiv -->
-# torch todo
-'''
+#conda install -c conda-forge openpiv
+
+# For UnLiteFlowNet-PIV
+conda install -c conda-forge cupy
+```
 
 ## Composition of datasets
 
