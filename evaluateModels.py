@@ -200,12 +200,12 @@ def evalWithDeformPIV(config, paht2Cases, storeDir, modelName='DiffeomorphicPIV'
         preds.append(predOfOneSampleSet.astype(np.float32))
         gts.append(gt.astype(np.float32))
 
-    # TODO: save epe and predictions
     # debug
     if debug:
         print(epeList.__len__(), preds.__len__(), gts.__len__())
         print(preds[0].shape, gts[0].shape)
 
+    # save model predicted epe resutls in the shape of NxBx2xWxH
     if not os.path.exists(storeDir):
         os.makedirs(storeDir)
     np.savez(storeDir + modelName, data=np.asarray(epeList), preds=preds, gts=gts)
@@ -252,7 +252,7 @@ if __name__ == '__main__':
                         help="""Type of upsampling method""")
     # ------------------------- config for deformpiv -------------------------
     parser.add_argument('--pivmethod', type=str,
-                        default='opticalflow')
+                        default='deeppiv1')
     parser.add_argument('--deform', type=str,
                         default='FDDI')
     parser.add_argument('--runs', type=int,
@@ -265,15 +265,12 @@ if __name__ == '__main__':
     # print(paths, sep='\n')
     # imgs,gt = readCase(paths[0])
     # print(imgs.shape, gt.shape, sep='\n')
-
-    # evaluateModel(args,modelName='RAFT-PIV',path2cases=paths,storeDir='results/lamb-oseen/',debug=True)
-    # evaluateModel(args,modelName='RAFT-SS-PIV',path2cases=paths,debug=True)
-    # evaluateModel(args,modelName='UnLiteFlowNet-PIV',path2cases=paths,debug=True)
     
-    # paths = getSamples(PREFIX, caseName='lamb-oseen')
-    # evalWithDeformPIV(args, paths, storeDir='./results/lamb-oseen/', debug=True)
-    paths = getSamples(PREFIX, caseName='sin')
-    evalWithDeformPIV(args, paths, storeDir='./results/sin/', debug=True)
+    ## evaluate later appended model or methods
+    paths = getSamples(PREFIX, caseName='lamb-oseen')
+    evalWithDeformPIV(args, paths, storeDir='./results/lamb-oseen/', debug=True)
+    # paths = getSamples(PREFIX, caseName='sin')
+    # evalWithDeformPIV(args, paths, storeDir='./results/sin/', debug=True)
     assert False
     
     for model in MODEL_NAMES:

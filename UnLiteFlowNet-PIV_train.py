@@ -168,8 +168,8 @@ def train(args):
             local_dict = sample_batched
             images = local_dict['target'].type(torch.FloatTensor).to(device) / 255
             flows = local_dict['flow'].type(torch.FloatTensor).to(device)
-            image1 = images[:,0,...].unsqueeze(dim=1)
-            image2 = images[:,1,...].unsqueeze(dim=1)
+            image1 = images[:,0,...].unsqueeze(dim=1) # image1 to BxCxWxH
+            image2 = images[:,1,...].unsqueeze(dim=1) # image2 to BxCxWxH
             assert len(image1.shape) == 4, 'wrong shape for image1, image2'
             
             optimizer.zero_grad()

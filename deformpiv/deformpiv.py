@@ -1,6 +1,11 @@
 import cv2
 import numpy as np
 from openpiv import tools, scaling, pyprocess, validation, filters
+from unliteflownet.model.models import estimate, device, Network
+import torch
+import torch.nn.functional as F
+import torch.nn as nn
+
 
 # interpolation with opencv
 def remap(img, x, y):
@@ -100,14 +105,52 @@ def opticalflow(img1, img2, level=4):
     return x, y, u, v
 
 
+def loadNet():
+    PATH = './results/UnLiteFlowNet-PIV_Problem2/ckpt.tar'
+    stateDict = torch.load(PATH)
+    unliteflownet = Network()
+    unliteflownet.load_state_dict(stateDict['model_state_dict'])
+    unliteflownet.eval()
+    unliteflownet.to(device)
+
+    print('UnLiteFlowNet-PIV is loaded successfully.')
+    return unliteflownet
+
+def deeppiv1(img1, img2, unliteflownet):
+    # The input of the network is recommended to be (256, 256)
+    assert img1.shape == img2.shape #== (256,256)
+    sz = img1.shape
+    h, w = sz[0], sz[1]
+    x1 = torch.Tensor(img1/255.0).view(1,1,sz[0],sz[1]).to(device)
+    x2 = torch.Tensor(img2/255.0).view(1,1,sz[0],sz[1]).to(device)
+
+    if img1.shape != (256, 256):
+        x1 = F.interpolate(x1, (256, 256), mode='bilinear', align_corners=False)
+        x2 = F.interpolate(x2, (256, 256), mode='bilinear', align_corners=False)
+
+    y_pre = estimate(x1.to(device), x2.to(device), unliteflownet, train=False)
+    y_pre = F.interpolate(y_pre, (h, w), mode='bilinear', align_corners=False)
+
+    u = y_pre[0][0].detach().cpu()
+    v = y_pre[0][1].detach().cpu()
+
+    u = u.numpy()
+    v = v.numpy()
+
+    x, y = np.meshgrid(np.arange(img1.shape[1]), np.arange(img1.shape[0]))
+    return x, y, u, v
+
+
 # Our wrapper for iterative deformation PIV
 class DeformPIV():
     def __init__(self, config):
         self._c = config
-        assert self._c.pivmethod in ['opticalflow', 'openpiv', 'deeppiv']
+        assert self._c.pivmethod in ['opticalflow', 'openpiv', 'deeppiv1']
         assert self._c.deform in ['FDI', 'FDI2', 'CDI', 'FDDI', 'FDDI2', 'CDDI']
 
-        self.onepass = eval(self._c.pivmethod) # opticalflow1
+        if self._c.pivmethod == 'deeppiv1':
+            self.unliteflownet = loadNet()
+        self.onepass = eval(self._c.pivmethod) # we are using deeppiv1
         self.warping = self._c.deform
 
     def compute(self, image1, image2, u=None, v=None):
@@ -143,8 +186,8 @@ class DeformPIV():
             elif self._c.pivmethod == 'openpiv':
                 # x, y, du, dv = self.onepass(img1, img2, winsz=16, overlap=8)
                 x, y, du, dv = self.onepass(img1, img2)
-            elif self._c.pivmethod == 'deeppiv':
-                x, y, du, dv = self.onepass(img1, img2)
+            elif self._c.pivmethod == 'deeppiv1':
+                x, y, du, dv = self.onepass(img1, img2, self.unliteflownet)
             else:
                 raise NotImplementedError
 
