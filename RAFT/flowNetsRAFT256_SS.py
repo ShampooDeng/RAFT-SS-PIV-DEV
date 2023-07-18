@@ -1,4 +1,9 @@
 '''
+This code is modified from the work of Teed, Zachary, and Jia Deng. "Raft: Recurrent all-pairs field transforms for optical flow." European Conference on Computer Vision. Springer, Cham, 2020.
+URL: https://github.com/princeton-vl/RAFT
+'''
+
+'''
 Copyright (c) 2020-2021, Christian Lagemann
 '''
 '''
@@ -12,7 +17,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-import torchvision
+# import torchvision
 
 from RAFT.submodules_RAFT_extractor256 import BasicEncoder256
 from RAFT.submodules_RAFT_GRU256 import BasicUpdateBlock256
@@ -240,8 +245,10 @@ class RAFT256_SS(nn.Module):
             self.upsample_lanczos8 = LanczosUpsampling([args.batch_size, 2, self.flow_size, self.flow_size], [args.batch_size, 2, self.flow_size * 8, self.flow_size * 8])
     
     def initialize_flow(self, img):
-        """ Flow is represented as difference between two coordinate grids flow = coords1 - coords0"""
+        """ Flow is represented as difference between two coordinate grids flow = coords1 - coords0 """
         N, C, H, W = img.shape
+        # FIXME: if H%8 !=0, coords0's size may not match fmap's size.
+        # The reason maybe fmap1, fmap2 outputed by fnet maybe H//8+1 or H//8.
         coords0 = coords_grid(N, H//8, W//8).to(img.device)
         coords1 = coords_grid(N, H//8, W//8).to(img.device)
 
@@ -269,7 +276,7 @@ class RAFT256_SS(nn.Module):
         https://github.com/yongleex/DiffeomorphicPIV/blob/main/deformpiv.py#L180
         """
          
-        # convert x,y to grid:NxHxWx2
+        # convert x,y to grid:BxHxWx2
         grid = torch.stack((x, y), dim=-1)
         
         # normalize grid to (-1,1) for grid_sample
@@ -279,6 +286,7 @@ class RAFT256_SS(nn.Module):
         grid[:,:,:,1] = (grid[:,:,:,1] / (grid_shape[0] - 1) - 0.5)*2
 
         # shape img to NxCxHxW for grid_sample
+        # FIXME: remove unsqueeze here
         img = torch.unsqueeze(img, dim=1)
         out = F.grid_sample(img, grid, mode='bicubic', align_corners=True)
         
